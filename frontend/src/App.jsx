@@ -39,7 +39,9 @@ function App() {
                 <Route path='*' element={<Navigate to={'/postlist'} />}></Route>
               </Routes>
             </userContext.Provider>
-          </QueryClientProvider>) : (<Routes>
+          </QueryClientProvider>) : (
+            <userContext.Provider value={{ email, setEmail, confirmEmail, setConfirmEmail, password, setPassword, confirmPassword, setConfirmPassword, firstName, setFirstName, lastName, setLastName, userName, setUserName, emailError, setEmailError, confirmEmailError, setConfirmEmailError, userNameError, confirmPasswordError, setConfirmPasswordError, setUserNameError }}>
+          <Routes>
             <Route path='/' element={<Home />}></Route>
             <Route path='/login' element={<Login />}></Route>
             <Route path='/signup' element={<SignUp />}></Route>
@@ -47,7 +49,8 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />}></Route>
             <Route path="/update-password/:token" element={<UpdatePassword />}></Route>
             <Route path='*' element={<Navigate to={'/'} />}></Route>
-          </Routes>)}
+          </Routes>
+          </userContext.Provider>)}
         </BrowserRouter>
       </div>
     </>
