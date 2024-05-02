@@ -28,6 +28,12 @@ const UpdateProfilePicture = () => {
     const handleDelete = () => {
         setFile(null);
         setPreview(null);
+            // Reset file input value
+        const fileInput = document.getElementById('file-upload');
+        if (fileInput) {
+        fileInput.value = '';
+    }
+
     };
 
     const handleSubmit = async (event) => {
