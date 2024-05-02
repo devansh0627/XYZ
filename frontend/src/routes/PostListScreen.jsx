@@ -11,16 +11,18 @@ const PostListScreen = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate=useNavigate();
   const { email, setEmail, confirmEmail, setConfirmEmail, password, setPassword, confirmPassword, setConfirmPassword, firstName, setFirstName, lastName, setLastName, userName, setUserName, emailError, setEmailError, confirmEmailError, setConfirmEmailError, confirmPasswordError, setConfirmPasswordError, userNameError, setUserNameError } = useContext(userContext);
-
+  const [loading, setLoading] = useState(false);
   const [data,setData]=useState([]);
   const getData=async()=>{
     const toastId=toast.loading("Loading...")
+    setLoading(true);
     try{
     const res=await utils.makeAuthenticatedGETRequest('/api/v1/auth/posts');
     toast.dismiss(toastId);
+    setLoading(false);
     setData(prev => [...prev, ...res.data]);
     }
-    catch(e){toast.dismiss(toastId);console.log(e);}  
+    catch(e){toast.dismiss(toastId);setLoading(false);console.log(e);}  
   };
   useEffect(()=>{
     getData();
@@ -28,7 +30,7 @@ const PostListScreen = () => {
   
   const handleInfiniteScroll = async ()=>{
     try{
-        if(window.innerHeight + document.documentElement.scrollTop+1>=document.documentElement.scrollHeight){
+        if(window.innerHeight + document.documentElement.scrollTop+1>=document.documentElement.scrollHeight && !loading){
           getData();
         }
     }
