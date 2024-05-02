@@ -1,4 +1,4 @@
-import { useEffect, useState,useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import * as utils from '../utils/serveRoutes.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,37 +9,46 @@ import userContext from '../contexts/userContext.jsx';
 const PostListScreen = () => {
   const [profilePic, setProfilePic] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const { email, setEmail, confirmEmail, setConfirmEmail, password, setPassword, confirmPassword, setConfirmPassword, firstName, setFirstName, lastName, setLastName, userName, setUserName, emailError, setEmailError, confirmEmailError, setConfirmEmailError, confirmPasswordError, setConfirmPasswordError, userNameError, setUserNameError } = useContext(userContext);
-  const [loading, setLoading] = useState(false);
-  const [data,setData]=useState([]);
-  const getData=async()=>{
-    const toastId=toast.loading("Loading...")
-    setLoading(true);
-    try{
-    const res=await utils.makeAuthenticatedGETRequest('/api/v1/auth/posts');
-    toast.dismiss(toastId);
-    setLoading(false);
-    setData(prev => [...prev, ...res.data]);
+  const [data, setData] = useState([]);
+  let toastId = null;
+
+  const getData = async () => {
+    toastId = toast.loading("Loading...");
+    try {
+      const res = await utils.makeAuthenticatedGETRequest('/api/v1/auth/posts');
+      toast.dismiss(toastId);
+      setData(prev => [...prev, ...res.data]);
+      toastId = null; // Reset toastId after dismissing the loading toast
+    } catch (e) {
+      toast.dismiss(toastId);
+      console.log(e);
     }
-    catch(e){toast.dismiss(toastId);setLoading(false);console.log(e);}  
   };
-  useEffect(()=>{
+
+  useEffect(() => {
     getData();
-  },[])
-  
-  const handleInfiniteScroll = async ()=>{
-    try{
-        if(window.innerHeight + document.documentElement.scrollTop+1>=document.documentElement.scrollHeight && !loading){
-          getData();
-        }
+  }, []);
+
+  const handleInfiniteScroll = async () => {
+    try {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 1 >=
+        document.documentElement.scrollHeight &&
+        !toastId
+      ) {
+        getData();
+      }
+    } catch (e) {
+      console.log(e);
     }
-    catch(e){console.log(e);}
-  }
-  useEffect(()=>{
-    window.addEventListener('scroll',handleInfiniteScroll);
-    return ()=>window.removeEventListener("scroll",handleInfiniteScroll);
-  },[])
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleInfiniteScroll);
+    return () => window.removeEventListener('scroll', handleInfiniteScroll);
+  }, []);
   const [cookies, setCookie, removeCookie] = useCookies(['tokenForAuth', 'tokenForFirstName', 'tokenForLastName']);
   useEffect(() => {
     const getProfilePic = async () => {
@@ -52,34 +61,34 @@ const PostListScreen = () => {
   }, []);
 
   const handleLogout = () => {
-   
-const loadingToastId = toast.loading("Logging out...");
-const temp = async () => {
-   await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate a 1 second delay for the logout process
-}
-temp();
-// Hide loading toast message
-toast.dismiss(loadingToastId);
-toast.success("Logout Successful! See you soon!", {
-   autoClose: 1500,
-   onClose: () => {
-       removeCookie('tokenForAuth');
-       removeCookie('tokenForFirstName');
-       removeCookie('tokenForLastName');
-       setEmail('');
-       setConfirmEmail('');
-       setPassword('');
-       setConfirmPassword('');
-       setFirstName('');
-       setLastName('');
-       setUserName('');
-       setEmailError('');
-       setConfirmEmailError("");
-       setConfirmPasswordError("");
-       setUserNameError("");
-       navigate('/');
-   }
-});
+
+    const loadingToastId = toast.loading("Logging out...");
+    const temp = async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate a 1 second delay for the logout process
+    }
+    temp();
+    // Hide loading toast message
+    toast.dismiss(loadingToastId);
+    toast.success("Logout Successful! See you soon!", {
+      autoClose: 1500,
+      onClose: () => {
+        removeCookie('tokenForAuth');
+        removeCookie('tokenForFirstName');
+        removeCookie('tokenForLastName');
+        setEmail('');
+        setConfirmEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
+        setUserName('');
+        setEmailError('');
+        setConfirmEmailError("");
+        setConfirmPasswordError("");
+        setUserNameError("");
+        navigate('/');
+      }
+    });
   };
 
   const handleChangeProfilePic = () => {
@@ -139,14 +148,14 @@ toast.success("Logout Successful! See you soon!", {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data.map((post,index) => (
+        {data.map((post, index) => (
           <div key={post.id} className="bg-white shadow-md p-4">
-            <h2 className="text-lg font-semibold">{index+1}</h2>
+            <h2 className="text-lg font-semibold">{index + 1}</h2>
             <img src={post.imageUrl} alt={post.title} className="mt-2 rounded-lg" />
             <p className="mt-2">{post.content}</p>
           </div>
         ))}
-    
+
       </div>
     </>
   );
