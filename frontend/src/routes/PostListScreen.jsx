@@ -1,25 +1,43 @@
 import { useEffect, useState,useContext } from 'react';
-import { useQuery } from 'react-query';
 import * as utils from '../utils/serveRoutes.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 import userContext from '../contexts/userContext.jsx';
+
 const PostListScreen = () => {
   const [profilePic, setProfilePic] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate=useNavigate();
   const { email, setEmail, confirmEmail, setConfirmEmail, password, setPassword, confirmPassword, setConfirmPassword, firstName, setFirstName, lastName, setLastName, userName, setUserName, emailError, setEmailError, confirmEmailError, setConfirmEmailError, confirmPasswordError, setConfirmPasswordError, userNameError, setUserNameError } = useContext(userContext);
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } = useQuery('posts', async () => {
-    const res = await utils.makeAuthenticatedGETRequest('/api/v1/auth/posts');
-    return res.data;
-  }, {
-    getNextPageParam: (lastPage, allPages) => {
-      // Assuming the backend API returns a nextPageToken or similar for pagination
-      return lastPage.nextPageToken;
-    },
-  });
+
+  const [data,setData]=useState([]);
+  const getData=async()=>{
+    const toastId=toast.loading("Loading...")
+    try{
+    const res=await utils.makeAuthenticatedGETRequest('/api/v1/auth/posts');
+    toast.dismiss(toastId);
+    setData(prev => [...prev, ...res.data]);
+    }
+    catch(e){toast.dismiss(toastId);console.log(e);}  
+  };
+  useEffect(()=>{
+    getData();
+  },[])
+  
+  const handleInfiniteScroll = async ()=>{
+    try{
+        if(window.innerHeight + document.documentElement.scrollTop+1>=document.documentElement.scrollHeight){
+          getData();
+        }
+    }
+    catch(e){console.log(e);}
+  }
+  useEffect(()=>{
+    window.addEventListener('scroll',handleInfiniteScroll);
+    return ()=>window.removeEventListener("scroll",handleInfiniteScroll);
+  },[])
   const [cookies, setCookie, removeCookie] = useCookies(['tokenForAuth', 'tokenForFirstName', 'tokenForLastName']);
   useEffect(() => {
     const getProfilePic = async () => {
@@ -85,11 +103,9 @@ toast.success("Logout Successful! See you soon!", {
   const handleDropdownClick = (e) => {
     e.stopPropagation(); // Prevent the click event from propagating to the document
   };
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error fetching posts</div>;
   return (
     <>
-      <ToastContainer position="top-center" autoClose={1500} pauseOnHover={false} />
+      <ToastContainer position="bottom-center" autoClose={1500} pauseOnHover={false} />
       <div className="flex justify-between items-center mb-4 text-blue-900">
         <div className="flex items-center">
           <img src="images/01 logo2.jpg" alt="Logo" className="h-8 w-auto" />
@@ -121,22 +137,14 @@ toast.success("Logout Successful! See you soon!", {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data.map((post) => (
+        {data.map((post,index) => (
           <div key={post.id} className="bg-white shadow-md p-4">
-            <h2 className="text-lg font-semibold">{post.title}</h2>
+            <h2 className="text-lg font-semibold">{index+1}</h2>
             <img src={post.imageUrl} alt={post.title} className="mt-2 rounded-lg" />
             <p className="mt-2">{post.content}</p>
           </div>
         ))}
-        {hasNextPage && (
-          <button
-            onClick={() => fetchNextPage()}
-            disabled={!hasNextPage}
-            className="col-span-3 bg-blue-500 text-white font-semibold py-2 px-4 rounded mt-4"
-          >
-            Load More
-          </button>
-        )}
+    
       </div>
     </>
   );
