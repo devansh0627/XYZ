@@ -5,12 +5,10 @@ const MONGODB_URL = `mongodb+srv://devansh2706:${password}@cluster0.s4ovg3i.mong
 exports.connect = () => {
     mongoose.connect(MONGODB_URL, {
         useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-        .then(() => console.log("DB Connected Successfully"))
-        .catch((error) => {
-            console.log("DB Connection Failed");
-            console.error(error);
-            process.exit(1);
-        })
+        useUnifiedTopology: true
+      }).then(() => {
+        console.log('Connected to MongoDB');
+      }).catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+      });
 };
