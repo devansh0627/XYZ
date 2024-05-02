@@ -62,10 +62,7 @@ const SignUp = () => {
             toast.info("Please accept the terms and conditions.");
             return;
         }
-        if(!emailError || !confirmEmailError || !confirmPasswordError || !userNameError){
-            toast.error("Please fix all the errors.");
-            return;
-        }
+        
         if (!email || !confirmEmail || !password || !confirmPassword || !firstName || !userName) {
             toast.info("Please fill out all the required fields.")
         }
